@@ -19,6 +19,7 @@ header{padding:18px 0 10px}
 h1{font-size:1.05rem;margin:0 0 10px;font-weight:600;color:var(--mute)}
 .search{display:flex;gap:8px}
 .search input{flex:1;min-width:0;font-size:1.15rem;padding:13px 16px;border:1.5px solid var(--line);border-radius:10px;background:var(--panel)}
+.search input::-webkit-search-cancel-button{cursor:pointer}
 .search input:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px var(--accent-soft)}
 .filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
 .chip{border:1px solid var(--line);background:var(--panel);padding:5px 13px;border-radius:99px;cursor:pointer;font-size:.9rem}
@@ -39,7 +40,6 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:minmax(300px,420px) 
 .more{display:block;margin:12px auto;padding:8px 18px;border:1px solid var(--line);border-radius:8px;background:none;cursor:pointer}
 .empty{padding:36px 22px;color:var(--mute)}
 .detail{padding:26px 30px}
-.back{display:none;border:0;background:none;color:var(--accent);padding:0 0 12px;cursor:pointer}
 .dword{font-family:var(--jp);font-size:2.9rem;line-height:1.25;margin:0;overflow-wrap:anywhere}
 .dword.k{font-size:6rem;color:var(--kan);line-height:1.1}
 .dsub{color:var(--mute);margin:2px 0 18px}
@@ -58,11 +58,11 @@ h3{font-size:.95rem;margin:28px 0 8px;color:var(--mute);font-weight:600}
 .rel small{display:block;color:var(--mute)}
 mark{background:var(--mark);color:inherit;border-radius:3px}
 @media (max-width:860px){
- main{display:block;position:relative}
- .list{height:100%}
- .detail{display:none;position:fixed;inset:0;z-index:5;border-radius:0;border:0;padding:calc(env(safe-area-inset-top) + 16px) 18px 24px}
+ main{display:block}
+ .list,.detail{height:100%}
+ .detail{display:none;padding:18px}
  body.show-detail .detail{display:block}
- .back{display:block}
+ body.show-detail .list{display:none}
  dl{grid-template-columns:1fr;gap:2px 0}dt{margin-top:10px}
  .dword{font-size:2.2rem}.dword.k{font-size:5rem}
 }
@@ -159,7 +159,7 @@ function relVocab(ch,self){
 function renderDetail(){
   const e=items[state.sel];const el=$('detail');
   if(!e){el.innerHTML='<div class="empty">Chọn một mục trong danh sách để xem chi tiết.</div>';return}
-  let h='<button class="back" id="back">‹ Quay lại danh sách</button>';
+  let h='';
   if(e.t==='k'){
     h+=`<p class="dword k">${esc(e.k)}</p><p class="dsub">Hán tự · Bài ${e.l}</p><dl>${row('Âm Hán',e.h)}${row('Nghĩa',e.m)}${row('Cách nhớ',e.n)}${row('Ví dụ',e.ex,'jp')}${row('Cách đọc',e.r)}${row('Nghĩa ví dụ',e.em)}${row('Ghi chú',e.x)}</dl>`;
     const same=(kanjiMap[e.k]||[]).filter(k=>k!==e);
@@ -184,13 +184,13 @@ function select(id,push){
 }
 function closeDetail(){document.body.classList.remove('show-detail')}
 
-$('q').addEventListener('input',e=>{state.q=e.target.value;state.limit=80;renderList();$('list').scrollTop=0});
+$('q').addEventListener('click',closeDetail);
+$('q').addEventListener('input',e=>{closeDetail();state.q=e.target.value;state.limit=80;renderList();$('list').scrollTop=0});
 $('list').addEventListener('click',e=>{
   if(e.target.id==='more'){state.limit+=120;renderList();return}
   const b=e.target.closest('.item');if(b)select(+b.dataset.id);
 });
 $('detail').addEventListener('click',e=>{
-  if(e.target.id==='back'){closeDetail();return}
   const b=e.target.closest('[data-id]');if(b){select(+b.dataset.id);}
 });
 window.addEventListener('keydown',e=>{if(e.key==='Escape')closeDetail()});
